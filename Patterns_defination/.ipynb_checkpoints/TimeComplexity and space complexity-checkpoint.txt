@@ -1,0 +1,2065 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║         COMPLETE GUIDE TO TIME & SPACE COMPLEXITY                          ║
+║         From Zero to FAANG-Level Understanding                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+This guide is self-contained. No other resource needed.
+Read top to bottom once. Then use as a reference forever.
+
+══════════════════════════════════════════════════════════════════════════════
+PART 1 — WHAT IS COMPLEXITY AND WHY DOES IT MATTER?
+══════════════════════════════════════════════════════════════════════════════
+
+When you write code, two things cost resources:
+  1. TIME  — how long does it take to run?
+  2. SPACE — how much memory does it consume?
+
+Complexity analysis answers: "How does the cost GROW as input grows?"
+
+We do NOT measure actual seconds or actual bytes.
+We measure the RATE OF GROWTH using Big O notation.
+
+WHY NOT MEASURE ACTUAL TIME?
+  - A slow laptop vs a fast server gives different results
+  - Same code in Python vs C++ runs at different speeds
+  - We want a machine-independent measure
+
+So instead we count OPERATIONS and how they scale with input size n.
+
+══════════════════════════════════════════════════════════════════════════════
+PART 2 — BIG O NOTATION — THE LANGUAGE OF COMPLEXITY
+══════════════════════════════════════════════════════════════════════════════
+
+Big O describes the UPPER BOUND — the worst case growth rate.
+
+FORMAL DEFINITION (simple version):
+  f(n) = O(g(n)) means f grows no faster than g as n → infinity
+
+In plain English:
+  "As the input doubles, how does the work change?"
+
+THREE TYPES OF NOTATION (know all three for interviews):
+
+  Big O   → O(...)  → WORST CASE  (most commonly used)
+  Big Ω   → Ω(...)  → BEST CASE
+  Big Θ   → Θ(...)  → AVERAGE / TIGHT BOUND
+
+Example: Linear Search
+  Best case  Ω(1)   — element found at index 0
+  Worst case O(n)   — element at last index or not present
+  Average    Θ(n/2) → simplified to Θ(n)
+
+In interviews, when someone says "time complexity", they almost always
+mean Big O (worst case). Always state worst case unless asked otherwise.
+
+══════════════════════════════════════════════════════════════════════════════
+PART 3 — THE RULES FOR SIMPLIFYING BIG O
+══════════════════════════════════════════════════════════════════════════════
+
+RULE 1 — DROP CONSTANTS
+  O(2n)   → O(n)
+  O(5)    → O(1)
+  O(3n²)  → O(n²)
+
+  Why? Constants don't change the growth RATE.
+  Whether you do 2 operations per element or 10, it's still linear.
+
+RULE 2 — DROP LOWER ORDER TERMS
+  O(n² + n)     → O(n²)
+  O(n + log n)  → O(n)
+  O(n³ + n²)    → O(n³)
+
+  Why? At very large n, the dominant term completely overshadows the rest.
+  When n = 1,000,000:
+    n²  = 1,000,000,000,000  (one trillion)
+    n   = 1,000,000          (one million)
+  n is irrelevant next to n².
+
+RULE 3 — DIFFERENT INPUTS = DIFFERENT VARIABLES
+  If you have two separate arrays of size m and n:
+  O(m + n)  NOT  O(2n)  NOT  O(n)
+
+  This is a very common interview mistake.
+
+RULE 4 — NESTED LOOPS MULTIPLY
+  One loop O(n), inside it another loop O(n) → O(n × n) = O(n²)
+  One loop O(n), inside it a loop O(m)       → O(n × m)
+
+RULE 5 — SEQUENTIAL STEPS ADD
+  Step A: O(n)
+  Step B: O(n²)
+  Total:  O(n + n²) → O(n²)  [drop lower term]
+
+══════════════════════════════════════════════════════════════════════════════
+PART 4 — COMPLETE COMPLEXITY HIERARCHY (Fastest to Slowest)
+══════════════════════════════════════════════════════════════════════════════
+
+Order from BEST to WORST:
+
+  O(1)        Constant
+  O(log n)    Logarithmic
+  O(√n)       Square root
+  O(n)        Linear
+  O(n log n)  Linearithmic
+  O(n²)       Quadratic
+  O(n³)       Cubic
+  O(2ⁿ)       Exponential
+  O(n!)       Factorial
+
+Visual growth table (approximate operations for each n):
+
+  n         O(1)  O(log n)  O(n)    O(n log n)  O(n²)       O(2ⁿ)
+  -----------------------------------------------------------------------
+  1         1     1         1       1           1            2
+  10        1     3         10      33          100          1,024
+  100       1     7         100     664         10,000       HUGE
+  1,000     1     10        1,000   9,966       1,000,000    ASTRONOMICAL
+  1,000,000 1     20        1M      ~20M        1 trillion   IMPOSSIBLE
+
+Reading this table:
+  - O(1) is always 1 operation. Input size doesn't matter.
+  - O(log n) barely grows. Even for n=1,000,000 it's only ~20 operations.
+  - O(n²) at n=1,000 is already 1 million operations. At n=10,000 → 100M.
+  - O(2ⁿ) is unusable beyond n=30 or so.
+
+INTERVIEW ACCEPTABLE COMPLEXITIES (for competitive problems):
+  n ≤ 10        → O(n!) or O(2ⁿ) acceptable
+  n ≤ 20        → O(2ⁿ) acceptable
+  n ≤ 500       → O(n³) acceptable
+  n ≤ 5,000     → O(n²) acceptable
+  n ≤ 10⁶      → O(n log n) or O(n) required
+  n ≤ 10⁸      → O(n) or O(log n) required
+
+══════════════════════════════════════════════════════════════════════════════
+PART 5 — TIME COMPLEXITY — IN DEPTH WITH EXAMPLES
+══════════════════════════════════════════════════════════════════════════════
+
+─────────────────────────────────────────────────────────────────────────────
+O(1) — CONSTANT TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  The algorithm always takes the same number of steps,
+  regardless of input size.
+
+Key Insight:
+  No loops. No recursion. Direct computation or lookup.
+
+Examples:
+
+  1. Array index access
+     arr[5]
+     → Always 1 operation. n doesn't matter.
+
+  2. HashMap lookup
+     d = {'a': 1, 'b': 2}
+     d['a']  → O(1) average
+
+  3. Stack push/pop
+     stack.append(x)   → O(1)
+     stack.pop()       → O(1)
+
+  4. Math formula
+     def sum_of_n(n):
+         return n * (n + 1) // 2
+     → No loop. Direct formula. O(1).
+
+  5. Checking if a number is even
+     n % 2 == 0  → O(1)
+
+What looks like O(1) but isn't:
+  - String concatenation in some languages (can be O(n))
+  - Python list slicing arr[2:5] → actually O(k) where k = slice length
+
+─────────────────────────────────────────────────────────────────────────────
+O(log n) — LOGARITHMIC TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Each step HALVES (or reduces by a constant fraction) the remaining work.
+  After k steps, n / 2^k = 1 → k = log₂(n).
+
+Key Insight:
+  When you eliminate half the possibilities at each step.
+
+WHAT IS log n?
+  log₂(8)   = 3   because 2³ = 8
+  log₂(16)  = 4   because 2⁴ = 16
+  log₂(1024)= 10  because 2¹⁰ = 1024
+
+  In Big O, the base of the log doesn't matter (they differ by a constant).
+  O(log₂n) = O(log₁₀n) = O(log n)
+
+Examples:
+
+  1. Binary Search
+     def binary_search(arr, target):
+         L, R = 0, len(arr) - 1
+         while L <= R:
+             mid = (L + R) // 2
+             if arr[mid] == target:
+                 return mid
+             elif arr[mid] < target:
+                 L = mid + 1    # eliminate left half
+             else:
+                 R = mid - 1   # eliminate right half
+         return -1
+
+     Each iteration halves the search space.
+     n=1024 → at most 10 iterations (log₂1024 = 10)
+
+  2. Power function (fast exponentiation)
+     def power(base, exp):
+         if exp == 0: return 1
+         if exp % 2 == 0:
+             half = power(base, exp // 2)
+             return half * half
+         return base * power(base, exp - 1)
+
+  3. Balanced BST search/insert/delete → O(log n)
+
+  4. Finding an element in a heap → O(log n)
+
+How to RECOGNIZE O(log n):
+  - "divide in half each time"
+  - "tree height" based operations
+  - The word "binary" usually hints at log n
+
+─────────────────────────────────────────────────────────────────────────────
+O(√n) — SQUARE ROOT TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Loop runs up to √n times. Less common but appears in number theory
+  and some grid problems.
+
+Example:
+
+  1. Check if n is prime
+     def is_prime(n):
+         if n < 2: return False
+         for i in range(2, int(n**0.5) + 1):
+             if n % i == 0:
+                 return False
+         return True
+
+     Why √n? If n has a factor > √n, its pair factor is < √n.
+     So you only need to check up to √n.
+
+  2. Sieve of Eratosthenes inner loop → O(√n) per number
+
+─────────────────────────────────────────────────────────────────────────────
+O(n) — LINEAR TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  You visit each element exactly once (or a constant number of times).
+  Work scales directly with input size.
+
+Key Insight:
+  Single pass through the data.
+
+Examples:
+
+  1. Linear Search
+     def linear_search(arr, target):
+         for x in arr:
+             if x == target:
+                 return True
+         return False
+
+  2. Finding max element
+     def find_max(arr):
+         max_val = arr[0]
+         for x in arr:
+             if x > max_val:
+                 max_val = x
+         return max_val
+
+  3. Two-pointer (opposite ends or sliding window)
+     Both pointers together traverse n elements total → O(n)
+
+  4. Building a prefix sum array
+     for i in range(1, n):
+         prefix[i] = prefix[i-1] + arr[i]
+
+  5. Kadane's algorithm
+     Single pass, so O(n)
+
+TRICK: Even if you have 3 separate single-pass loops over n elements,
+it's O(3n) → O(n). Still linear.
+
+─────────────────────────────────────────────────────────────────────────────
+O(n log n) — LINEARITHMIC TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  O(n) work repeated O(log n) times, or divide-and-conquer where
+  you split into halves and do O(n) work to merge.
+
+Key Insight:
+  The sweet spot for comparison-based sorting.
+  Any comparison sort CANNOT be faster than O(n log n) (proven lower bound).
+
+Examples:
+
+  1. Merge Sort
+     def merge_sort(arr):
+         if len(arr) <= 1:
+             return arr
+         mid = len(arr) // 2
+         left  = merge_sort(arr[:mid])    # T(n/2)
+         right = merge_sort(arr[mid:])    # T(n/2)
+         return merge(left, right)        # O(n)
+
+     Recurrence: T(n) = 2T(n/2) + O(n) → O(n log n)
+     - log n levels of recursion
+     - O(n) work done at each level
+     - Total: n × log n
+
+  2. Quick Sort (average case)
+     Average O(n log n), worst case O(n²) if pivot always smallest/largest
+
+  3. Heap Sort → always O(n log n)
+
+  4. Python's built-in sort (Timsort) → O(n log n)
+
+  5. Building a heap from scratch → O(n log n)
+     (Note: heapify is O(n) — different from building by inserting one by one)
+
+─────────────────────────────────────────────────────────────────────────────
+O(n²) — QUADRATIC TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Nested loops where each runs n times.
+  For every element, you look at every other element.
+
+Key Insight:
+  Almost always caused by two nested loops over the same input.
+
+Examples:
+
+  1. Bubble Sort
+     def bubble_sort(arr):
+         n = len(arr)
+         for i in range(n):            # n times
+             for j in range(n-i-1):    # n times inner
+                 if arr[j] > arr[j+1]:
+                     arr[j], arr[j+1] = arr[j+1], arr[j]
+
+  2. Insertion Sort
+     def insertion_sort(arr):
+         for i in range(1, len(arr)):      # O(n)
+             key = arr[i]
+             j = i - 1
+             while j >= 0 and arr[j] > key:  # O(n) worst case
+                 arr[j+1] = arr[j]
+                 j -= 1
+             arr[j+1] = key
+
+  3. Check all pairs
+     for i in range(n):
+         for j in range(i+1, n):
+             # compare arr[i] and arr[j]
+     → n*(n-1)/2 pairs → O(n²)
+
+  4. Naive 2D matrix operations
+     for i in range(n):
+         for j in range(n):
+             do_something()
+     → O(n²) but here n is rows/cols, so O(rows × cols)
+
+WATCH OUT: O(n²) is often a hint that there's a better O(n log n) or O(n)
+solution waiting to be found using better data structures.
+
+─────────────────────────────────────────────────────────────────────────────
+O(n³) — CUBIC TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Three nested loops each running n times.
+
+Examples:
+
+  1. Naive matrix multiplication
+     for i in range(n):
+         for j in range(n):
+             for k in range(n):
+                 C[i][j] += A[i][k] * B[k][j]
+
+  2. Finding all triplets
+     for i in range(n):
+         for j in range(i+1, n):
+             for k in range(j+1, n):
+                 # all (i,j,k) combos
+
+  3. Floyd-Warshall algorithm (all-pairs shortest path)
+     for k in range(n):
+         for i in range(n):
+             for j in range(n):
+                 dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+
+─────────────────────────────────────────────────────────────────────────────
+O(2ⁿ) — EXPONENTIAL TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Each new element DOUBLES the work. Typically from naive recursion
+  where you branch into 2 subproblems at each level.
+
+Examples:
+
+  1. Naive Fibonacci (classic bad recursion)
+     def fib(n):
+         if n <= 1: return n
+         return fib(n-1) + fib(n-2)   # 2 recursive calls each time
+
+     Recursion tree has 2^n nodes.
+     fib(50) makes ~2^50 = quadrillion calls.
+
+     Fix: Memoization → O(n) time, O(n) space
+     Fix: Iterative → O(n) time, O(1) space
+
+  2. All subsets (power set)
+     def all_subsets(arr):
+         if not arr: return [[]]
+         rest = all_subsets(arr[1:])
+         return rest + [[arr[0]] + s for s in rest]
+
+     n elements → 2^n subsets (must be 2ⁿ by definition)
+
+  3. Tower of Hanoi
+     T(n) = 2T(n-1) + 1 → O(2ⁿ)
+
+─────────────────────────────────────────────────────────────────────────────
+O(n!) — FACTORIAL TIME
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Trying every possible permutation.
+  n! = n × (n-1) × (n-2) × ... × 1
+
+  n=5  → 120 permutations
+  n=10 → 3,628,800 permutations
+  n=15 → 1.3 trillion permutations (already unusable)
+
+Examples:
+
+  1. Generating all permutations
+     from itertools import permutations
+     list(permutations([1,2,3,4]))  → 4! = 24 results
+
+  2. Naive Travelling Salesman Problem (brute force)
+     Try every possible route through n cities → O(n!)
+
+══════════════════════════════════════════════════════════════════════════════
+PART 6 — SPACE COMPLEXITY — IN DEPTH WITH EXAMPLES
+══════════════════════════════════════════════════════════════════════════════
+
+Space complexity measures the EXTRA MEMORY your algorithm uses,
+NOT counting the input itself (unless asked for total space).
+
+TWO TYPES:
+  Auxiliary Space  → Extra space used BY the algorithm (most common)
+  Total Space      → Auxiliary + Input size
+
+In interviews, "space complexity" almost always means AUXILIARY SPACE.
+
+─────────────────────────────────────────────────────────────────────────────
+O(1) — CONSTANT SPACE
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  You use a fixed number of extra variables, regardless of n.
+
+Key Insight:
+  No new arrays/lists/dicts created that grow with n.
+  Only scalar variables (integers, pointers, booleans).
+
+Examples:
+
+  1. Two-pointer (opposite ends)
+     def two_sum_sorted(arr, target):
+         L, R = 0, len(arr) - 1
+         while L < R:
+             s = arr[L] + arr[R]
+             if s == target: return True
+             elif s < target: L += 1
+             else: R -= 1
+         return False
+     Extra variables: L, R, s → 3 variables → O(1) space
+
+  2. Kadane's algorithm
+     def max_subarray(arr):
+         cur = best = arr[0]
+         for x in arr[1:]:
+             cur = max(x, cur + x)
+             best = max(best, cur)
+         return best
+     Extra variables: cur, best → O(1) space
+
+  3. In-place sorting (like some versions of quicksort)
+
+  4. Sliding window with a sum counter
+     Just L, R, window_sum → O(1) space
+
+─────────────────────────────────────────────────────────────────────────────
+O(log n) — LOGARITHMIC SPACE
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Usually comes from recursive call stack depth = O(log n).
+  Binary Search written recursively uses O(log n) stack space
+  even though it's O(1) if written iteratively.
+
+Examples:
+
+  1. Binary Search (recursive version)
+     def binary_search(arr, L, R, target):
+         if L > R: return -1
+         mid = (L + R) // 2
+         if arr[mid] == target: return mid
+         elif arr[mid] < target:
+             return binary_search(arr, mid+1, R, target)  # recursive
+         else:
+             return binary_search(arr, L, mid-1, target)  # recursive
+
+     Each call halves the range. Max depth = log n.
+     Call stack holds log n frames → O(log n) space.
+
+  2. Balanced BST operations (recursively implemented)
+
+  3. Merge Sort space for call stack = O(log n)
+     BUT merge sort also creates temporary arrays → total O(n)
+
+─────────────────────────────────────────────────────────────────────────────
+O(n) — LINEAR SPACE
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Extra memory grows linearly with input.
+  Creating an array/list/dict of size n.
+
+Examples:
+
+  1. Prefix Sum array
+     prefix = [0] * n     → allocates n integers → O(n) space
+
+  2. HashMap for frequency count
+     freq = {}
+     for x in arr:
+         freq[x] = freq.get(x, 0) + 1
+     In worst case, all elements unique → n entries → O(n) space
+
+  3. Merge Sort temporary arrays
+     merge() creates left and right arrays → O(n) total extra space
+
+  4. Recursive Fibonacci with memoization
+     memo = {}   → stores up to n values → O(n) space
+
+  5. DFS / BFS on a graph
+     visited = set()  → up to n nodes → O(n) space
+
+  6. Call stack of linear recursion
+     def factorial(n):
+         if n == 0: return 1
+         return n * factorial(n-1)
+     Depth n → n frames on call stack → O(n) space
+
+─────────────────────────────────────────────────────────────────────────────
+O(n²) — QUADRATIC SPACE
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Storing a 2D matrix or all pairs.
+
+Examples:
+
+  1. 2D DP table
+     dp = [[0] * n for _ in range(n)]
+     → n × n grid → O(n²) space
+
+  2. Adjacency matrix for a graph with n nodes
+     graph = [[0] * n for _ in range(n)]
+     → O(n²) space
+
+  3. Storing all pairs
+     pairs = [(i, j) for i in range(n) for j in range(n)]
+     → n² pairs → O(n²) space
+
+─────────────────────────────────────────────────────────────────────────────
+O(2ⁿ) — EXPONENTIAL SPACE
+─────────────────────────────────────────────────────────────────────────────
+Definition:
+  Storing all subsets, or very deep branching recursion.
+
+Examples:
+
+  1. Generating all subsets explicitly
+     → 2^n subsets → O(2ⁿ) space to store them all
+
+  2. Naive recursive Fibonacci without memoization
+     Has 2^n recursive calls but only O(n) stack depth at any one time.
+     (Space ≠ time here — common confusion!)
+
+══════════════════════════════════════════════════════════════════════════════
+PART 7 — RECURSION AND CALL STACK SPACE
+══════════════════════════════════════════════════════════════════════════════
+
+THIS IS THE MOST MISUNDERSTOOD PART. READ CAREFULLY.
+
+Every recursive function call takes up space on the CALL STACK.
+When a function calls itself, the current state (variables, return address)
+is pushed onto the stack. When it returns, it's popped off.
+
+SPACE = maximum depth of the recursion tree at any one time
+
+EXAMPLE 1 — Linear Recursion
+  def sum_array(arr, i):
+      if i == len(arr): return 0
+      return arr[i] + sum_array(arr, i+1)
+
+  Call stack at deepest point:
+    sum_array(arr, 0)
+      sum_array(arr, 1)
+        sum_array(arr, 2)
+          ...
+            sum_array(arr, n)
+
+  Depth = n → O(n) space
+
+EXAMPLE 2 — Binary Recursion (Merge Sort)
+  def merge_sort(arr):
+      ...
+      merge_sort(left)    # goes all the way down first
+      merge_sort(right)   # then this
+      ...
+
+  Maximum stack depth at any point = log n (height of recursion tree)
+  Temporary arrays at each level = O(n) total across all levels
+  Total space = O(n) (dominated by the temporary arrays, not the stack)
+
+EXAMPLE 3 — Bad Fibonacci (why it's O(n) space, not O(2ⁿ))
+  def fib(n):
+      if n <= 1: return n
+      return fib(n-1) + fib(n-2)
+
+  Python evaluates fib(n-1) FIRST, going all the way down.
+  At any moment, only ONE branch path is on the stack.
+  Max depth = n → O(n) SPACE (even though TIME is O(2ⁿ))
+
+  Time and space complexity are INDEPENDENT. Don't confuse them.
+
+══════════════════════════════════════════════════════════════════════════════
+PART 8 — HOW TO ANALYZE ANY CODE (STEP-BY-STEP PROCESS)
+══════════════════════════════════════════════════════════════════════════════
+
+Follow this process for every piece of code:
+
+STEP 1 — Identify what n represents
+  Is n the array length? Number of nodes? String length?
+  Sometimes there are multiple variables (m, n, k).
+
+STEP 2 — Look at loops
+  Single loop over n        → O(n)
+  Nested loop over n        → O(n²)
+  Loop that halves each time → O(log n)
+  Loop from 1 to n stepping by i → check carefully
+
+STEP 3 — Look at recursion
+  Draw the recursion tree
+  Work per node × number of nodes = time
+  Max depth of tree = stack space
+
+STEP 4 — Look at data structures created
+  New array of size n      → O(n) space
+  New 2D array n×n         → O(n²) space
+  HashMap with n entries   → O(n) space
+  Just a few variables     → O(1) space
+
+STEP 5 — Apply simplification rules
+  Drop constants, drop lower terms
+
+STEP 6 — State both time AND space
+  Always give both in interviews.
+
+──────────────────────────────────────────────────────────────────────
+WORKED EXAMPLE — COMPLETE ANALYSIS
+──────────────────────────────────────────────────────────────────────
+
+Problem: Find two numbers in array that sum to target.
+
+SOLUTION 1 — Brute Force
+  def two_sum_brute(arr, target):
+      for i in range(len(arr)):              # O(n)
+          for j in range(i+1, len(arr)):     # O(n) inner
+              if arr[i] + arr[j] == target:
+                  return [i, j]
+      return []
+
+  Time:  O(n²) — nested loops
+  Space: O(1)  — only i, j variables, no extra data structure
+
+SOLUTION 2 — HashMap
+  def two_sum_hash(arr, target):
+      seen = {}                              # extra space
+      for i, x in enumerate(arr):           # O(n) one pass
+          complement = target - x
+          if complement in seen:             # O(1) lookup
+              return [seen[complement], i]
+          seen[x] = i                        # O(1) insert
+      return []
+
+  Time:  O(n)  — single loop, O(1) operations inside
+  Space: O(n)  — 'seen' dict can hold up to n entries
+
+SOLUTION 3 — Two Pointer (requires sorted array)
+  def two_sum_two_pointer(arr, target):
+      L, R = 0, len(arr) - 1
+      while L < R:
+          s = arr[L] + arr[R]
+          if s == target: return [L, R]
+          elif s < target: L += 1
+          else: R -= 1
+      return []
+
+  Time:  O(n)  — at most n iterations total (L+R moves = n)
+  Space: O(1)  — only L, R, s variables
+
+COMPARISON:
+  Brute Force: O(n²) time, O(1) space
+  HashMap:     O(n)  time, O(n) space  ← trades space for speed
+  Two Pointer: O(n)  time, O(1) space  ← best of both (needs sorted input)
+
+══════════════════════════════════════════════════════════════════════════════
+PART 9 — COMMON DATA STRUCTURE COMPLEXITIES
+══════════════════════════════════════════════════════════════════════════════
+
+ARRAY / LIST
+  Access by index     O(1)
+  Search (unsorted)   O(n)
+  Search (sorted)     O(log n) with binary search
+  Insert at end       O(1) amortized
+  Insert at middle    O(n) (shift elements)
+  Delete at end       O(1)
+  Delete at middle    O(n) (shift elements)
+
+LINKED LIST
+  Access by index     O(n)
+  Search              O(n)
+  Insert at head      O(1)
+  Insert at tail      O(1) if tail pointer kept, else O(n)
+  Delete at head      O(1)
+  Delete arbitrary    O(n) to find, O(1) to remove
+
+HASH MAP / DICT
+  Insert              O(1) average, O(n) worst (hash collision)
+  Delete              O(1) average
+  Lookup              O(1) average, O(n) worst
+  Space               O(n)
+
+HASH SET
+  Insert              O(1) average
+  Delete              O(1) average
+  Contains            O(1) average
+  Space               O(n)
+
+STACK (using list)
+  Push                O(1)
+  Pop                 O(1)
+  Peek/Top            O(1)
+  Space               O(n)
+
+QUEUE (using deque)
+  Enqueue             O(1)
+  Dequeue             O(1)
+  Peek                O(1)
+  Space               O(n)
+
+BINARY HEAP (min/max)
+  Insert              O(log n)
+  Delete min/max      O(log n)
+  Get min/max         O(1)
+  Build from list     O(n)  ← surprising! Not O(n log n)
+  Space               O(n)
+
+BINARY SEARCH TREE (balanced: AVL, Red-Black)
+  Search              O(log n)
+  Insert              O(log n)
+  Delete              O(log n)
+  Space               O(n)
+
+BINARY SEARCH TREE (unbalanced, worst case)
+  Search              O(n)  ← degenerates to linked list
+  Insert              O(n)
+  Delete              O(n)
+
+TRIE
+  Insert word         O(m)  where m = word length
+  Search word         O(m)
+  Space               O(ALPHABET_SIZE × n × m) worst case
+
+GRAPH (V = vertices, E = edges)
+  Adjacency List:  Space O(V + E)
+  Adjacency Matrix: Space O(V²)
+  BFS/DFS:         O(V + E) time, O(V) space
+
+══════════════════════════════════════════════════════════════════════════════
+PART 10 — COMMON ALGORITHM COMPLEXITIES
+══════════════════════════════════════════════════════════════════════════════
+
+SORTING ALGORITHMS
+  Algorithm        Best       Average     Worst      Space
+  ─────────────────────────────────────────────────────────
+  Bubble Sort      O(n)       O(n²)       O(n²)      O(1)
+  Selection Sort   O(n²)      O(n²)       O(n²)      O(1)
+  Insertion Sort   O(n)       O(n²)       O(n²)      O(1)
+  Merge Sort       O(n log n) O(n log n)  O(n log n) O(n)
+  Quick Sort       O(n log n) O(n log n)  O(n²)      O(log n)
+  Heap Sort        O(n log n) O(n log n)  O(n log n) O(1)
+  Counting Sort    O(n+k)     O(n+k)      O(n+k)     O(k)
+  Radix Sort       O(nk)      O(nk)       O(nk)      O(n+k)
+  Tim Sort (Python)O(n)       O(n log n)  O(n log n) O(n)
+
+  k = range of values, best for small ranges
+
+SEARCHING ALGORITHMS
+  Linear Search        O(n)      O(1) space
+  Binary Search        O(log n)  O(1) iterative, O(log n) recursive
+
+GRAPH ALGORITHMS
+  BFS                  O(V + E)  O(V) space
+  DFS                  O(V + E)  O(V) space
+  Dijkstra (heap)      O((V+E) log V)  O(V) space
+  Bellman-Ford         O(VE)     O(V) space
+  Floyd-Warshall       O(V³)     O(V²) space
+  Prim's MST           O(E log V) O(V) space
+  Kruskal's MST        O(E log E) O(V) space
+  Topological Sort     O(V + E)  O(V) space
+
+DYNAMIC PROGRAMMING PATTERNS
+  1D DP (Fibonacci, climb stairs)     O(n) time, O(n) space
+  1D DP optimized (rolling array)     O(n) time, O(1) space
+  2D DP (LCS, knapsack, edit dist)    O(m×n) time, O(m×n) space
+  2D DP space-optimized (one row)     O(m×n) time, O(n) space
+
+TWO POINTER PATTERNS
+  Opposite ends                       O(n) time,  O(1) space
+  Fast/Slow pointers                  O(n) time,  O(1) space
+  Sliding window (fixed)              O(n) time,  O(1) space
+  Sliding window (variable)           O(n) time,  O(k) space (for window content)
+
+PREFIX SUM
+  Build                               O(n) time, O(n) space
+  Query                               O(1) time, O(1) space
+
+KADANE'S ALGORITHM
+  Max subarray sum                    O(n) time, O(1) space
+
+══════════════════════════════════════════════════════════════════════════════
+PART 11 — AMORTIZED ANALYSIS
+══════════════════════════════════════════════════════════════════════════════
+
+Sometimes a single operation is occasionally expensive but
+RARELY so. Amortized analysis gives the average cost per operation
+over a sequence of operations.
+
+CLASSIC EXAMPLE — Dynamic Array (Python list append)
+
+  list.append(x) is O(1) amortized. Why?
+
+  - When list is full, it doubles in size and copies all elements.
+  - Copy is O(n) — expensive!
+  - But this happens only every n insertions.
+  - Total cost for n insertions: n copies + n inserts ≈ 2n = O(n)
+  - Per operation: O(n)/n = O(1) amortized
+
+  Sizes during growth: 1, 2, 4, 8, 16, ...
+  Copies done: 1 + 2 + 4 + 8 + ... + n = 2n (geometric series)
+  Amortized cost = 2n / n = 2 = O(1)
+
+OTHER AMORTIZED O(1) EXAMPLES:
+  - Stack push/pop
+  - Queue enqueue/dequeue with two stacks
+  - Union-Find operations (with path compression)
+
+══════════════════════════════════════════════════════════════════════════════
+PART 12 — SPACE-TIME TRADEOFFS
+══════════════════════════════════════════════════════════════════════════════
+
+One of the most important concepts in algorithm design:
+  YOU CAN OFTEN TRADE SPACE FOR TIME (or vice versa)
+
+FUNDAMENTAL IDEA:
+  Spend more memory to avoid recomputing things → faster runtime
+  Use less memory → might need to recompute → slower runtime
+
+EXAMPLES:
+
+1. FIBONACCI
+   Naive recursive:   O(2ⁿ) time,  O(n) space
+   Memoization:       O(n) time,   O(n) space  ← spend space, save time
+   Bottom-up DP:      O(n) time,   O(n) space
+   Optimized:         O(n) time,   O(1) space  ← best of both worlds here
+
+2. TWO SUM
+   Brute force:  O(n²) time, O(1) space
+   HashMap:      O(n)  time, O(n) space  ← spend n space → n² becomes n
+
+3. LOOKUP TABLES / CACHING
+   Precompute results → O(1) lookup later at cost of O(n) storage
+
+4. SORTING TRADE-OFF
+   Keeping data sorted → O(n log n) upfront cost
+   But then binary search every query: O(log n) instead of O(n)
+   Worth it when: #queries × O(n) > O(n log n) + #queries × O(log n)
+
+THE GOLDEN QUESTION in interviews:
+  "Can we trade some space to improve the time complexity?"
+  Almost always the answer is yes, using a HashMap or auxiliary array.
+
+══════════════════════════════════════════════════════════════════════════════
+PART 13 — TRICKY CASES AND COMMON MISTAKES
+══════════════════════════════════════════════════════════════════════════════
+
+MISTAKE 1 — Thinking string concatenation is O(1)
+  In Python, strings are IMMUTABLE.
+  result = result + new_char  → creates a NEW string each time → O(n) per op
+  Over n characters → O(n²) total!
+
+  Fix: use list then ''.join()
+  parts = []
+  parts.append(char)    → O(1) each
+  ''.join(parts)        → O(n) once at end
+
+MISTAKE 2 — Thinking recursion space = 0
+  Every recursive call takes stack space.
+  Recursive binary search: O(log n) space (not O(1) like the iterative version)
+
+MISTAKE 3 — Thinking O(1) space means nothing is stored
+  O(1) means a CONSTANT amount of extra space.
+  Storing 5 variables is still O(1).
+  Storing n variables is O(n).
+
+MISTAKE 4 — Counting the input as "space used"
+  Input array of size n is NOT your algorithm's space usage.
+  Space complexity = EXTRA space created by your algorithm.
+
+MISTAKE 5 — Not considering hash collision for HashMap
+  Average case HashMap = O(1) per operation.
+  Worst case (all keys collide to same bucket) = O(n).
+  In interviews, state "O(1) average" for hash operations.
+
+MISTAKE 6 — Thinking two nested loops always = O(n²)
+  for i in range(n):
+      j = i
+      while j < n:
+          j *= 2     ← j DOUBLES each time → inner loop is O(log n)
+  Total: O(n log n)  NOT O(n²)
+
+  Always trace what the inner loop variable does!
+
+MISTAKE 7 — Multi-dimensional input
+  A matrix has m rows and n cols.
+  Visiting every cell = O(m × n)  NOT O(n²) unless m == n.
+  Be specific about variables.
+
+MISTAKE 8 — Python built-ins have hidden complexity
+  in operator on list:   O(n)  — linear scan
+  in operator on set:    O(1)  average — hash lookup
+  sorted():              O(n log n)
+  max(), min(), sum():   O(n)  — traverse entire iterable
+  list.insert(0, x):     O(n)  — shifts all elements
+  list.pop():            O(1)
+  list.pop(0):           O(n)  — shifts all elements (use deque instead!)
+
+══════════════════════════════════════════════════════════════════════════════
+PART 14 — MASTER THEOREM (FOR RECURSIVE ALGORITHMS)
+══════════════════════════════════════════════════════════════════════════════
+
+For divide-and-conquer recurrences of the form:
+  T(n) = a·T(n/b) + f(n)
+
+Where:
+  a = number of subproblems
+  b = factor by which input shrinks
+  f(n) = work done outside recursive calls
+
+CASE 1: f(n) = O(n^c) where c < log_b(a)
+  → T(n) = O(n^(log_b a))
+  Work at leaves dominates.
+
+CASE 2: f(n) = O(n^c) where c = log_b(a)
+  → T(n) = O(n^c · log n)
+  Work at each level is equal.
+
+CASE 3: f(n) = O(n^c) where c > log_b(a)
+  → T(n) = O(f(n))
+  Work at root dominates.
+
+PRACTICAL EXAMPLES:
+
+  Merge Sort: T(n) = 2T(n/2) + O(n)
+    a=2, b=2, f(n)=n, log_2(2)=1, c=1 → Case 2
+    → O(n log n) ✓
+
+  Binary Search: T(n) = 1·T(n/2) + O(1)
+    a=1, b=2, f(n)=1, log_2(1)=0, c=0 → Case 2
+    → O(log n) ✓
+
+  Naive Matrix Mult: T(n) = 8T(n/2) + O(n²)
+    a=8, b=2, log_2(8)=3, c=2 → Case 1 (2 < 3)
+    → O(n³) ✓
+
+══════════════════════════════════════════════════════════════════════════════
+PART 15 — HOW TO PRESENT IN A FAANG INTERVIEW
+══════════════════════════════════════════════════════════════════════════════
+
+WHAT INTERVIEWERS WANT:
+
+1. State it confidently, proactively (before being asked)
+   "This runs in O(n) time and O(n) space."
+
+2. JUSTIFY it
+   "It's O(n) because we do a single pass through the array with
+    constant work at each step."
+
+3. Mention BOTH time AND space every time.
+
+4. Use the right variables
+   "O(V + E) where V is vertices and E is edges"
+   Not just "O(n)" for everything.
+
+5. Know best/average/worst when relevant
+   "Quick sort is O(n log n) average but O(n²) worst case
+    when the pivot is always the min or max."
+
+6. Know when to optimize
+   If you give a brute force: "This is O(n²) time. We can improve to
+   O(n) using a HashMap, at the cost of O(n) extra space."
+
+TEMPLATE FOR STATING COMPLEXITY:
+  "The time complexity is O(___) because ____________.
+   The space complexity is O(___) because _____________."
+
+EXAMPLE:
+  "The time complexity is O(n) because we iterate through the array
+   once and each operation inside the loop (hash lookup, hash insert)
+   is O(1) on average. The space complexity is O(n) because in the
+   worst case all elements are distinct and the HashMap stores n entries."
+
+══════════════════════════════════════════════════════════════════════════════
+PART 16 — QUICK REFERENCE CHEAT SHEET
+══════════════════════════════════════════════════════════════════════════════
+
+RECOGNIZE BY CODE PATTERN:
+  Single loop                      → O(n) time
+  Two nested loops                 → O(n²) time
+  Loop that halves                 → O(log n) time
+  Recursive halving                → O(log n) time, O(log n) space
+  Divide & conquer with O(n) merge → O(n log n) time
+  Generate all subsets             → O(2ⁿ) time/space
+  Generate all permutations        → O(n!) time/space
+
+RECOGNIZE BY ALGORITHM NAME:
+  Binary Search      → O(log n) time, O(1) or O(log n) space
+  Two Pointers       → O(n) time, O(1) space
+  Sliding Window     → O(n) time, O(1) to O(k) space
+  Prefix Sum         → O(n) build, O(1) query
+  Kadane's           → O(n) time, O(1) space
+  Merge Sort         → O(n log n) time, O(n) space
+  Quick Sort         → O(n log n) avg, O(n²) worst
+  Heap Sort          → O(n log n) time, O(1) space
+  BFS / DFS          → O(V+E) time, O(V) space
+  DP (1D)            → O(n) time, O(n) space (or O(1) optimized)
+  DP (2D)            → O(m×n) time, O(m×n) space
+
+SPACE QUICK REFERENCE:
+  A few scalar vars        → O(1)
+  Recursion depth d        → O(d) stack space
+  New array of size n      → O(n)
+  HashMap with n entries   → O(n)
+  2D array n×n             → O(n²)
+  All subsets              → O(2ⁿ)
+
+══════════════════════════════════════════════════════════════════════════════
+END OF GUIDE
+══════════════════════════════════════════════════════════════════════════════
+Total sections: 16
+Topics covered: Big O, all complexities O(1) to O(n!),
+                recursion/stack space, amortized analysis,
+                space-time tradeoffs, master theorem,
+                common mistakes, data structures, algorithms,
+                and FAANG interview presentation.
+══════════════════════════════════════════════════════════════════════════════\
+
+_____________________________________________________________________________________________________________________________________________________________
+_____________________________________________________________________________________________________________________________________________________________
+
+
+
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║     TIME & SPACE COMPLEXITY — EXPLAINED LIKE YOU ARE 5 YEARS OLD           ║
+║     No jargon. No confusion. Just simple stories and examples.             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 1 — WHAT IS COMPLEXITY? (The Toy Box Story)
+══════════════════════════════════════════════════════════════════════════════
+
+Imagine your mom asks you to find your red toy car.
+
+You have TWO toy boxes:
+
+  BOX A — All toys are neatly sorted. Red toys on top.
+           You find the car in 1 second. FAST!
+
+  BOX B — All toys are thrown in randomly.
+           You dig through every single toy. Takes 5 minutes. SLOW!
+
+This is EXACTLY what complexity is about.
+
+  "How much WORK does the computer need to do?"
+  "How much TIME does it take?"
+  "How much SPACE (memory) does it use?"
+
+We want to write code that is like BOX A — fast and smart.
+Not BOX B — slow and wasteful.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 2 — WHAT IS "n"? (The Cookie Story)
+══════════════════════════════════════════════════════════════════════════════
+
+In complexity, we always talk about "n".
+n just means: HOW MANY THINGS do you have?
+
+  n = 5   means you have 5 cookies
+  n = 100 means you have 100 cookies
+  n = 1000 means you have 1000 cookies
+
+When we say "as n gets bigger", we mean:
+  "What happens when you have MORE AND MORE things?"
+
+Example:
+  If you have 5 cookies and eat 1 per second → done in 5 seconds
+  If you have 100 cookies and eat 1 per second → done in 100 seconds
+  If you have 1000 cookies → done in 1000 seconds
+
+The work GROWS with n. Simple!
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 3 — TIME COMPLEXITY (The Race Story)
+══════════════════════════════════════════════════════════════════════════════
+
+TIME complexity = HOW MANY STEPS does the computer take?
+
+Think of it like a race.
+Some runners finish fast. Some are slow.
+We want our code to be the FAST runner.
+
+We use a special label called BIG O to describe speed.
+It looks like this:  O(...)
+
+Just read it as: "Order of ..."
+O(1) = "Order of 1" = very fast
+O(n) = "Order of n" = okay
+O(n²) = "Order of n squared" = slow
+
+Let's learn each one with a fun story!
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 4 — O(1) — CONSTANT TIME
+         "The Magic Box"
+══════════════════════════════════════════════════════════════════════════════
+
+Imagine you have a MAGIC BOX.
+No matter how many toys are inside —
+you always pull out the exact toy you want in 1 second.
+
+10 toys?   → 1 second
+1000 toys? → 1 second
+1 million? → 1 second
+
+It never changes. Always 1 step.
+
+This is O(1) — Constant Time.
+
+REAL LIFE COMPUTER EXAMPLES:
+
+  1. Looking up your name in a phonebook when you know the page number.
+     You go directly to page 47. Done. 1 step.
+
+  2. Checking the first item in a list.
+     arr[0]  → always 1 step no matter how big arr is.
+
+  3. Asking "is the number even?"
+     5 % 2 == 0   → 1 step. Always.
+
+  4. Opening a locker with a combination.
+     You know the combo. You open it. 1 step.
+
+IN CODE:
+  def get_first(arr):
+      return arr[0]     ← always 1 step. O(1).
+
+  def is_even(n):
+      return n % 2 == 0  ← always 1 step. O(1).
+
+SPACE: O(1) space means you only use a tiny fixed amount of memory.
+  Like keeping 1 sticky note on your desk. Doesn't grow.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 5 — O(log n) — LOGARITHMIC TIME
+         "The Guessing Game"
+══════════════════════════════════════════════════════════════════════════════
+
+Let's play a guessing game!
+I'm thinking of a number between 1 and 100.
+You have to guess it. I'll say "higher" or "lower".
+
+BAD STRATEGY (slow):
+  Guess 1... nope. Guess 2... nope. Guess 3... nope.
+  This could take 100 guesses. Very slow!
+
+SMART STRATEGY (fast — this is O(log n)):
+  Guess 50. "Lower!" → Now I know it's 1-49.
+  Guess 25. "Higher!" → Now I know it's 26-49.
+  Guess 37. "Lower!" → Now I know it's 26-36.
+  ...
+
+  Every guess CUTS THE REMAINING OPTIONS IN HALF.
+
+  100 numbers → only 7 guesses needed!
+  1000 numbers → only 10 guesses needed!
+  1,000,000 numbers → only 20 guesses needed!
+
+  Even if n gets HUGE, the steps barely grow!
+
+This is O(log n). Incredibly efficient.
+
+WHY IS IT CALLED "log"?
+  log₂(8) = 3   because 2 × 2 × 2 = 8   (3 halvings to reach 1)
+  log₂(16) = 4  because 2⁴ = 16          (4 halvings)
+  log₂(1024) = 10                         (10 halvings)
+
+  "How many times can I cut n in half before I reach 1?"
+  That's log n.
+
+REAL LIFE COMPUTER EXAMPLES:
+
+  1. Binary Search in a sorted list.
+     Finding "mango" in a sorted fruit list of 1000 fruits.
+     Each step eliminates half. Done in ~10 steps.
+
+  2. Finding a word in a dictionary.
+     You open the middle. "Too late in alphabet." Open middle of first half.
+     You're doing binary search naturally!
+
+  3. Height of a balanced family tree with n people.
+     The height = log n levels.
+
+IN CODE:
+  def find_in_sorted_list(arr, target):
+      left = 0
+      right = len(arr) - 1
+      while left <= right:
+          mid = (left + right) // 2
+          if arr[mid] == target:
+              return mid           ← found!
+          elif arr[mid] < target:
+              left = mid + 1       ← cut left half
+          else:
+              right = mid - 1      ← cut right half
+      return -1
+
+  Time:  O(log n)  ← cuts in half each time
+  Space: O(1)      ← just left, right, mid variables
+
+SPACE (log n):
+  If binary search is written recursively (calling itself),
+  it keeps a "note" for each level of halving.
+  log n levels → O(log n) space for those notes.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 6 — O(n) — LINEAR TIME
+         "The Handshake Story"
+══════════════════════════════════════════════════════════════════════════════
+
+Imagine you walk into a room and you want to shake hands
+with EVERY person in the room.
+
+5 people?   → 5 handshakes
+100 people? → 100 handshakes
+1000 people?→ 1000 handshakes
+
+The work grows EQUALLY with the number of people.
+Double the people → double the handshakes.
+
+This is O(n) — Linear Time.
+
+REAL LIFE COMPUTER EXAMPLES:
+
+  1. Reading every page of a book.
+     100 pages → read 100 times. 500 pages → read 500 times.
+
+  2. Finding your friend in a crowd (unsorted).
+     You check each person one by one.
+
+  3. Adding up all numbers in a list.
+     You look at each number once.
+
+  4. Two Pointer technique.
+     Left pointer and right pointer together touch each element once.
+     Total steps = n. O(n).
+
+  5. Kadane's Algorithm.
+     Walk through the array once. Done. O(n).
+
+IN CODE:
+  def find_max(arr):
+      biggest = arr[0]
+      for number in arr:           ← visits each number once
+          if number > biggest:
+              biggest = number
+      return biggest
+
+  Time:  O(n)  ← one loop through all n items
+  Space: O(1)  ← only "biggest" variable stored
+
+  def build_prefix_sum(arr):
+      prefix = [0] * len(arr)      ← creates new array of size n
+      prefix[0] = arr[0]
+      for i in range(1, len(arr)):
+          prefix[i] = prefix[i-1] + arr[i]
+      return prefix
+
+  Time:  O(n)  ← one loop
+  Space: O(n)  ← new array of size n created
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 7 — O(n log n) — LINEARITHMIC TIME
+         "The Sorting Club Story"
+══════════════════════════════════════════════════════════════════════════════
+
+Imagine your teacher asks you to sort 32 students by height.
+
+SMART STRATEGY (this is O(n log n)):
+
+  Step 1 — Split the class in half. (16 + 16)
+  Step 2 — Split each half again. (8+8 and 8+8)
+  Step 3 — Keep splitting until groups of 1.
+  Step 4 — Now MERGE the groups back, keeping them in order.
+
+  This is called Merge Sort.
+
+  Why O(n log n)?
+    - log n = how many times you split (like the guessing game)
+    - n = the work done at each merge step
+    - Together = n × log n steps
+
+  For 32 students:
+    log₂(32) = 5 levels of splitting
+    Each level does n=32 comparisons to merge
+    Total ≈ 32 × 5 = 160 steps
+
+  This is MUCH better than O(n²):
+    O(n²) for 1000 items = 1,000,000 steps
+    O(n log n) for 1000 items ≈ 10,000 steps
+
+REAL LIFE COMPUTER EXAMPLES:
+  1. Merge Sort → O(n log n)
+  2. Quick Sort (average) → O(n log n)
+  3. Python's built-in sort() → O(n log n)
+  4. Heap Sort → O(n log n)
+
+IN CODE (Merge Sort idea):
+  def merge_sort(arr):
+      if len(arr) <= 1:
+          return arr
+      mid = len(arr) // 2
+      left  = merge_sort(arr[:mid])    ← sort left half
+      right = merge_sort(arr[mid:])    ← sort right half
+      return merge(left, right)        ← combine them in order
+
+  Time:  O(n log n)
+  Space: O(n)  ← temporary lists created during merging
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 8 — O(n²) — QUADRATIC TIME
+         "The Handshake With Everyone Story"
+══════════════════════════════════════════════════════════════════════════════
+
+Remember the handshake story?
+Now imagine EVERY person shakes hands with EVERY OTHER person.
+
+5 people  → 5 × 5 = 25 handshakes
+10 people → 10 × 10 = 100 handshakes
+100 people → 100 × 100 = 10,000 handshakes
+
+Double the people → FOUR TIMES the work!
+This grows very fast. Gets slow quickly.
+
+This is O(n²) — Quadratic Time.
+
+HOW TO SPOT IT:
+  A loop INSIDE another loop, both going through n items.
+
+  for i in range(n):         ← outer loop: n times
+      for j in range(n):     ← inner loop: n times each
+          do something       ← runs n × n = n² times total
+
+REAL LIFE COMPUTER EXAMPLES:
+  1. Bubble Sort — compare every pair of neighbors, repeatedly.
+  2. Check if any two items in a list are duplicates (naive way).
+  3. Finding all pairs (i, j) in an array.
+
+IN CODE (Bubble Sort):
+  def bubble_sort(arr):
+      n = len(arr)
+      for i in range(n):              ← outer: n times
+          for j in range(n - i - 1): ← inner: ~n times
+              if arr[j] > arr[j+1]:
+                  arr[j], arr[j+1] = arr[j+1], arr[j]
+
+  Time:  O(n²)  ← two nested loops
+  Space: O(1)   ← no extra array, just swapping in place
+
+WHEN IS IT OKAY?
+  If n is small (n < 1000), O(n²) is usually fine.
+  If n is large (n > 10,000), you need a better approach.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 9 — O(n³) — CUBIC TIME
+         "The Triple Handshake"
+══════════════════════════════════════════════════════════════════════════════
+
+Now imagine three groups. Every person from group A
+shakes hands with every person in group B AND group C.
+
+THREE nested loops = O(n³).
+
+Only okay for very small n (less than 500).
+
+EXAMPLE:
+  for i in range(n):
+      for j in range(n):
+          for k in range(n):
+              do something   ← runs n³ times
+
+REAL LIFE COMPUTER EXAMPLES:
+  1. Naive matrix multiplication (multiply two grids together).
+  2. Finding all triplets (i, j, k) in an array.
+  3. Floyd-Warshall algorithm (finding shortest path between all city pairs).
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 10 — O(2ⁿ) — EXPONENTIAL TIME
+          "The Double Trouble Story"
+══════════════════════════════════════════════════════════════════════════════
+
+Imagine you have a magic coin.
+Every second it DOUBLES.
+
+Start: 1 coin
+After 1 sec: 2 coins
+After 2 sec: 4 coins
+After 3 sec: 8 coins
+After 10 sec: 1,024 coins
+After 30 sec: 1,073,741,824 coins (over a BILLION!)
+After 50 sec: over a QUADRILLION coins
+
+It explodes out of control very fast!
+
+This is O(2ⁿ). Each new item DOUBLES the work.
+
+REAL LIFE COMPUTER EXAMPLES:
+
+  1. Bad Fibonacci (calling itself twice at every step):
+     def fib(n):
+         if n <= 1: return n
+         return fib(n-1) + fib(n-2)   ← 2 calls each time!
+
+     fib(50) makes 2^50 = over a quadrillion calls!
+     This is TERRIBLE. Never do this for large n.
+
+     FIX: Remember previous results (memoization) → O(n)
+
+  2. Finding ALL possible subsets of a list.
+     [1, 2, 3] → [], [1], [2], [3], [1,2], [1,3], [2,3], [1,2,3]
+     3 items → 2³ = 8 subsets.
+     20 items → 2²⁰ = over 1 million subsets.
+
+ONLY USE WHEN n is very small (n ≤ 20 or so).
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 11 — O(n!) — FACTORIAL TIME
+          "The Arrange All Toys Story"
+══════════════════════════════════════════════════════════════════════════════
+
+n! means n × (n-1) × (n-2) × ... × 1
+
+3! = 3 × 2 × 1 = 6
+5! = 5 × 4 × 3 × 2 × 1 = 120
+10! = 3,628,800
+15! = 1,307,674,368,000 (over a trillion!)
+
+Imagine you have 5 toy cars and you want to arrange them
+in EVERY possible order.
+5! = 120 arrangements. Manageable.
+
+10 toy cars?
+10! = 3,628,800 arrangements. Getting big.
+
+20 toy cars?
+20! = 2,432,902,008,176,640,000. Completely impossible.
+
+REAL LIFE COMPUTER EXAMPLES:
+  1. Finding every possible arrangement (permutation).
+  2. Brute-force Travelling Salesman: trying every route through all cities.
+
+Only usable when n ≤ 10 at most.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 12 — THE BIG PICTURE (Speed Comparison Story)
+══════════════════════════════════════════════════════════════════════════════
+
+Let's compare all complexities with n = 100 people:
+
+  O(1)        =           1 step    ← blink of an eye
+  O(log n)    =           7 steps   ← still instant
+  O(n)        =         100 steps   ← fast
+  O(n log n)  =         700 steps   ← still fast
+  O(n²)       =      10,000 steps   ← noticeable
+  O(n³)       =   1,000,000 steps   ← slow
+  O(2ⁿ)       = a number with 30 digits ← computer explodes
+  O(n!)       = a number with 157 digits ← impossible
+
+SIMPLE ANALOGY — Imagine walking to school:
+
+  O(1)       = teleporting there instantly
+  O(log n)   = taking a shortcut through the park
+  O(n)       = walking the normal route
+  O(n log n) = walking but stopping to check the map a few times
+  O(n²)      = walking every street in the neighborhood first
+  O(2ⁿ)      = walking to every city in the country before school
+  O(n!)      = walking to every place on Earth
+
+BEST TO WORST ORDER:
+  O(1) → O(log n) → O(√n) → O(n) → O(n log n) → O(n²) → O(n³) → O(2ⁿ) → O(n!)
+  FAST ─────────────────────────────────────────────────────────────────→ SLOW
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 13 — SPACE COMPLEXITY (The Backpack Story)
+══════════════════════════════════════════════════════════════════════════════
+
+Space complexity = HOW MUCH MEMORY (RAM) does your code use?
+
+Think of it like a BACKPACK.
+When you run code, the computer needs to carry things in its backpack.
+
+  Some code is LIGHT — barely fills the backpack.
+  Some code is HEAVY — needs a truck instead of a backpack.
+
+We want our code to use as LITTLE extra memory as possible.
+
+IMPORTANT:
+  The input (your original data) doesn't count toward space.
+  We only count the EXTRA things your code creates.
+
+  If you have an array of 100 numbers → that's your INPUT.
+  If your code creates ANOTHER array of 100 numbers → that's O(n) extra space.
+  If your code just uses 2-3 variables → that's O(1) extra space.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 14 — O(1) SPACE — CONSTANT SPACE
+          "The Sticky Note"
+══════════════════════════════════════════════════════════════════════════════
+
+O(1) space means you only use a tiny fixed amount of memory.
+Like writing on ONE sticky note.
+Doesn't matter if you have 10 cookies or 10 million cookies —
+you still only need that ONE sticky note.
+
+EXAMPLES:
+
+  1. Two Pointer technique:
+     Just two variables: left and right.
+     Two sticky notes. O(1) space. ✓
+
+  2. Kadane's Algorithm:
+     Just two variables: current_sum and best_sum.
+     Two sticky notes. O(1) space. ✓
+
+  3. Finding the max number:
+     Just one variable: biggest_so_far.
+     One sticky note. O(1) space. ✓
+
+  4. Checking if a number is even:
+     No extra variables at all. O(1) space. ✓
+
+IN CODE:
+  def two_pointer_sum(arr, target):
+      left = 0                    ← sticky note 1
+      right = len(arr) - 1       ← sticky note 2
+      while left < right:
+          s = arr[left] + arr[right]   ← sticky note 3
+          if s == target: return True
+          elif s < target: left += 1
+          else: right -= 1
+      return False
+
+  Space: O(1) — only 3 small variables. Never grows.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 15 — O(log n) SPACE — LOGARITHMIC SPACE
+          "The Folded Paper"
+══════════════════════════════════════════════════════════════════════════════
+
+Remember binary search — the guessing game that cuts in half each time?
+
+If you write it in a way where it CALLS ITSELF (recursion),
+the computer must remember where it was before each call.
+
+It's like folding a piece of paper in half repeatedly.
+Each fold is a "reminder note" the computer keeps.
+
+For n=1024 items:
+  1024 → 512 → 256 → 128 → 64 → 32 → 16 → 8 → 4 → 2 → 1
+  That's 10 folds = 10 reminder notes = O(log n) space.
+
+So recursive binary search:
+  Time:  O(log n)
+  Space: O(log n) ← the reminder notes on the call stack
+
+But if you write it with a loop (not recursion):
+  Time:  O(log n)
+  Space: O(1) ← no reminder notes needed!
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 16 — O(n) SPACE — LINEAR SPACE
+          "The Grocery List"
+══════════════════════════════════════════════════════════════════════════════
+
+O(n) space means your extra memory grows equally with n.
+Like writing a grocery list — more items, longer list.
+
+100 items → list of 100
+1000 items → list of 1000
+
+EXAMPLES:
+
+  1. Prefix Sum array:
+     Input array has n numbers.
+     You create ANOTHER array of n numbers to store sums.
+     → O(n) extra space.
+
+  2. HashMap (dictionary) to count things:
+     1000 different words → dictionary with 1000 entries.
+     → O(n) space.
+
+  3. Recursive function that calls itself n times:
+     Each call leaves a "reminder note".
+     n calls → n reminder notes → O(n) space.
+
+IN CODE:
+  def build_prefix(arr):
+      prefix = [0] * len(arr)    ← new list of size n created!
+      prefix[0] = arr[0]
+      for i in range(1, len(arr)):
+          prefix[i] = prefix[i-1] + arr[i]
+      return prefix
+
+  Space: O(n) — we created a whole new array.
+
+  def count_words(words):
+      freq = {}                    ← dictionary grows with input
+      for word in words:
+          freq[word] = freq.get(word, 0) + 1
+      return freq
+
+  Space: O(n) — worst case, all words are different → n entries.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 17 — O(n²) SPACE — QUADRATIC SPACE
+          "The Seating Chart"
+══════════════════════════════════════════════════════════════════════════════
+
+O(n²) space means creating a GRID.
+Like making a seating chart where every student
+has a row AND a column.
+
+n students → n × n = n² seats on the chart.
+
+EXAMPLES:
+
+  1. 2D array (matrix) of size n × n:
+     dp = [[0] * n for _ in range(n)]
+     → n rows × n cols = n² cells → O(n²) space.
+
+  2. Storing distances between every pair of cities:
+     n cities → n² pairs → O(n²) space.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 18 — THE CALL STACK (The Stack of Plates Story)
+══════════════════════════════════════════════════════════════════════════════
+
+This is very important and confusing for many people. Let's make it simple.
+
+Imagine a STACK OF PLATES in your kitchen.
+When you call a function recursively, the computer adds a plate.
+When the function finishes, it removes a plate.
+
+At any moment, the HEIGHT of the stack = memory being used.
+
+EXAMPLE 1 — Deep recursion (O(n) space):
+  def countdown(n):
+      if n == 0: return
+      countdown(n - 1)
+
+  countdown(5) calls countdown(4) calls countdown(3)... all the way to 0.
+
+  Stack at deepest point (like 5 plates stacked):
+    countdown(0)   ← top plate
+    countdown(1)
+    countdown(2)
+    countdown(3)
+    countdown(4)
+    countdown(5)   ← bottom plate
+
+  n calls deep → n plates → O(n) SPACE.
+
+EXAMPLE 2 — Binary recursion (O(log n) space):
+  Binary search calling itself halves n each time.
+  Only log n plates at most → O(log n) SPACE.
+
+EXAMPLE 3 — Bad Fibonacci (O(n) space, NOT O(2ⁿ)!):
+  def fib(n):
+      return fib(n-1) + fib(n-2)
+
+  Even though this makes 2ⁿ total calls (O(2ⁿ) TIME),
+  at any ONE MOMENT only n plates are stacked.
+  Because it goes all the way down one branch first,
+  then comes back up, then goes down the other branch.
+
+  SPACE = O(n)  (max stack height at any moment)
+  TIME  = O(2ⁿ) (total work done across all calls)
+
+  TIME and SPACE are DIFFERENT things! Don't mix them up.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 19 — THE BIG O RULES (Simple Version)
+══════════════════════════════════════════════════════════════════════════════
+
+RULE 1 — Throw away constants.
+  O(2n) → just say O(n)
+  O(100) → just say O(1)
+  O(3n²) → just say O(n²)
+
+  WHY? Constants don't change the SHAPE of growth.
+  Whether you do 2 things per item or 10 things per item,
+  it's still "one pass through the list". Still O(n).
+
+  STORY: If it takes you 2 seconds per cookie to eat,
+         100 cookies takes 200 seconds.
+         But the PATTERN is still "more cookies = more time".
+         We call it O(n), not O(2n).
+
+RULE 2 — Keep only the biggest term.
+  O(n² + n) → just say O(n²)
+  O(n + 100) → just say O(n)
+
+  WHY? When n is huge, smaller terms don't matter.
+  n = 1,000,000:
+    n²  = 1,000,000,000,000  (huge)
+    n   = 1,000,000          (tiny compared to n²)
+  The n is invisible next to n². So we ignore it.
+
+RULE 3 — Two separate loops ADD.
+  Loop 1 runs n times.
+  Loop 2 runs n times.
+  Total = O(n + n) = O(2n) = O(n).
+
+RULE 4 — Two NESTED loops MULTIPLY.
+  Outer loop runs n times.
+  Inner loop runs n times per outer loop.
+  Total = O(n × n) = O(n²).
+
+RULE 5 — Different inputs = different letters.
+  If you have TWO arrays of size m and n:
+  O(m + n)  NOT O(2n).
+  They're different things!
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 20 — THE SPACE-TIME TRADEOFF (The Shortcut Story)
+══════════════════════════════════════════════════════════════════════════════
+
+Here's a magical idea in computer science:
+
+  YOU CAN SPEND MEMORY TO SAVE TIME.
+  YOU CAN SAVE MEMORY BY SPENDING MORE TIME.
+
+It's like paying money for a shortcut vs walking the long way for free.
+
+STORY — The Treasure Map:
+  Imagine you need to find a treasure 10 times.
+  The treasure is hidden in a big forest.
+
+  OPTION A (slow, no memory used):
+    Every time you need the treasure, walk through the whole forest.
+    10 trips × 1 hour each = 10 hours total.
+    Time: O(n) per search. Space: O(1).
+
+  OPTION B (fast, uses memory):
+    First time, walk through the forest and draw a MAP.
+    Now all future trips take 1 second (just read the map).
+    Time: O(1) per search. Space: O(n) for the map.
+
+  WHICH IS BETTER? Depends!
+    If you search many times → Option B (pay with memory, save time).
+    If you search rarely → Option A (save memory, pay with time).
+
+REAL CODING EXAMPLE — Two Sum Problem:
+
+  BRUTE FORCE (no extra memory):
+    Check every pair.
+    Time: O(n²). Space: O(1).
+
+  HASHMAP (use extra memory):
+    Store numbers you've seen in a dictionary.
+    Time: O(n). Space: O(n).
+
+  The HashMap "spends" memory to avoid re-checking everything.
+
+This tradeoff is one of the most important ideas in all of coding!
+When you're stuck with a slow solution,
+ask yourself: "Can I store something to avoid repeating work?"
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 21 — OUR DSA TECHNIQUES (Simply Explained)
+══════════════════════════════════════════════════════════════════════════════
+
+Let's revisit the techniques from your DSA study with simple complexity:
+
+─────────────────────────────────────────────────────────────────────────────
+TWO POINTER — OPPOSITE ENDS
+─────────────────────────────────────────────────────────────────────────────
+Story: Two friends walking toward each other from opposite ends of a street.
+       They walk until they meet in the middle.
+
+Steps: At most n steps total (one walk across the street).
+       No extra things stored. Just two fingers pointing.
+
+Time:  O(n)  ← one walk through the array
+Space: O(1)  ← just left and right variables (two fingers)
+
+─────────────────────────────────────────────────────────────────────────────
+TWO POINTER — FAST/SLOW (Floyd's Cycle)
+─────────────────────────────────────────────────────────────────────────────
+Story: Two runners on a circular track.
+       One runs fast (2 steps), one runs slow (1 step).
+       If the track is circular, the fast runner will CATCH the slow runner.
+       If the track ends, the fast runner falls off first.
+
+Steps: Fast runner laps the slow runner in n steps at most.
+       No extra storage. Just two finger positions.
+
+Time:  O(n)  ← runners move at most n steps
+Space: O(1)  ← just slow and fast pointer variables
+
+─────────────────────────────────────────────────────────────────────────────
+SLIDING WINDOW
+─────────────────────────────────────────────────────────────────────────────
+Story: A moving window frame sliding across a painting.
+       You grow the window from the right.
+       If the window shows too much, shrink it from the left.
+       Each part of the painting enters the window once and leaves once.
+
+Steps: Each element is added (right moves) and removed (left moves) at most once.
+       Total: 2n operations = O(n).
+
+Time:  O(n)  ← each element enters and leaves the window once
+Space: O(1)  ← just left, right, and a running sum
+
+─────────────────────────────────────────────────────────────────────────────
+PREFIX SUM
+─────────────────────────────────────────────────────────────────────────────
+Story: You're a cashier. Instead of adding up prices every time someone asks
+       "how much did items 5 through 10 cost?", you pre-calculate totals.
+       Once done upfront, any question takes 1 step to answer.
+
+Building: One walk through all items = O(n) time, O(n) space for the list.
+Querying: Just subtract two numbers = O(1) time.
+
+Time:  O(n) to build, O(1) to answer each question
+Space: O(n)  ← you create a new list of running totals
+
+─────────────────────────────────────────────────────────────────────────────
+KADANE'S ALGORITHM
+─────────────────────────────────────────────────────────────────────────────
+Story: You're walking and collecting coins on a path.
+       At each step you decide: "Should I keep the coins I've collected,
+       or drop them all and start fresh from here?"
+       You remember the most coins you ever held.
+
+Steps: One walk through the path. Two "memory notes": current and best.
+
+Time:  O(n)  ← one walk through the array
+Space: O(1)  ← just current_sum and best_sum variables
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 22 — COMMON SILLY MISTAKES (And How to Avoid Them)
+══════════════════════════════════════════════════════════════════════════════
+
+MISTAKE 1 — "Recursion uses no memory!"
+  WRONG! Every recursive call is like adding a plate to a stack.
+  n recursive calls = n plates = O(n) space minimum.
+
+MISTAKE 2 — "O(1) space means zero memory used."
+  WRONG! O(1) means a FIXED small amount.
+  3 variables is still O(1). It just means it doesn't grow with n.
+
+MISTAKE 3 — "Two loops always means O(n²)."
+  WRONG! Only if they're NESTED (one inside the other).
+  Two separate loops = O(n) + O(n) = O(2n) = O(n).
+
+MISTAKE 4 — "The input array counts as my space complexity."
+  WRONG! The input is given to you. You didn't create it.
+  Only count the EXTRA things YOUR code creates.
+
+MISTAKE 5 — "Python's in operator is always fast."
+  For a LIST: x in my_list → O(n) (checks each item)
+  For a SET:  x in my_set  → O(1) (uses hash, super fast)
+  Use sets when you need fast lookups!
+
+MISTAKE 6 — "list.pop(0) is O(1)."
+  WRONG! Removing from the FRONT of a list shifts everything.
+  list.pop(0)  → O(n)  ← slow!
+  list.pop()   → O(1)  ← fast! (removes from end)
+  Use collections.deque if you need fast front removal.
+
+MISTAKE 7 — "If time is O(2ⁿ), space must also be O(2ⁿ)."
+  WRONG! Time and space are independent.
+  Bad Fibonacci: Time O(2ⁿ) but Space only O(n).
+  Always analyze them separately.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 23 — DATA STRUCTURES CHEAT SHEET (Plain English)
+══════════════════════════════════════════════════════════════════════════════
+
+ARRAY / LIST (like numbered boxes in a row)
+  Grab item by number (arr[5])      → O(1)  ← instant
+  Search for an item (unsorted)     → O(n)  ← check each box
+  Search for an item (sorted)       → O(log n) with binary search
+  Add to the END                    → O(1)  ← just put it there
+  Add to the MIDDLE                 → O(n)  ← shift everything over
+  Remove from END                   → O(1)
+  Remove from MIDDLE                → O(n)  ← shift everything over
+
+DICTIONARY / HASHMAP (like a phone book with instant lookup)
+  Add something                     → O(1)  ← almost always instant
+  Find something                    → O(1)  ← almost always instant
+  Remove something                  → O(1)
+  Memory used                       → O(n)
+
+SET (like a bag where duplicates don't exist)
+  Add something                     → O(1)
+  Check if something is in it       → O(1)  ← USE THIS not list for lookup
+  Remove something                  → O(1)
+  Memory used                       → O(n)
+
+STACK (like a pile of pancakes — last in, first out)
+  Add to top (push)                 → O(1)
+  Remove from top (pop)             → O(1)
+  Look at top (peek)                → O(1)
+  Memory used                       → O(n)
+
+QUEUE (like a line at a store — first in, first out)
+  Join the line (enqueue)           → O(1)  ← use deque!
+  Leave the line (dequeue)          → O(1)  ← use deque!
+  Memory used                       → O(n)
+  Note: Use collections.deque, not list for queue operations
+
+BINARY HEAP (like a tournament bracket — fastest to find winner)
+  Add player                        → O(log n)
+  Get the winner (min or max)       → O(1)  ← instant!
+  Remove the winner                 → O(log n)
+  Memory used                       → O(n)
+
+BINARY SEARCH TREE (balanced, like a sorted family tree)
+  Find someone                      → O(log n)
+  Add someone                       → O(log n)
+  Remove someone                    → O(log n)
+  Memory used                       → O(n)
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 24 — HOW TO ANSWER IN AN INTERVIEW (The Simple Template)
+══════════════════════════════════════════════════════════════════════════════
+
+In a FAANG interview, always say BOTH time AND space.
+
+TEMPLATE:
+  "The time complexity is O(___) because _______.
+   The space complexity is O(___) because _______."
+
+EXAMPLE 1 — Two pointer:
+  "Time is O(n) because we do one pass through the array
+   with left and right pointers moving toward each other.
+   Space is O(1) because we only use two pointer variables."
+
+EXAMPLE 2 — Sliding window:
+  "Time is O(n) because each element enters and leaves
+   the window at most once. Space is O(1) because we only
+   track left pointer, right pointer, and window sum."
+
+EXAMPLE 3 — Prefix sum:
+  "Build time is O(n) — one pass to create the prefix array.
+   Query time is O(1) — just subtract two values.
+   Space is O(n) — we create a new prefix array of size n."
+
+EXAMPLE 4 — HashMap approach:
+  "Time is O(n) — one pass with O(1) hash operations inside.
+   Space is O(n) — in the worst case, all n elements are
+   stored in the hashmap."
+
+BONUS TIP: Always mention if there's a BETTER solution!
+  "Right now it's O(n²). We could improve to O(n) using a
+   hashmap, but that would cost O(n) extra space."
+
+This shows you understand tradeoffs. Interviewers LOVE this.
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 25 — THE FINAL CHEAT SHEET
+══════════════════════════════════════════════════════════════════════════════
+
+"HOW MANY STEPS?" — TIME COMPLEXITY
+
+  I see this in the code...         → It's probably...
+  ─────────────────────────────────────────────────────
+  Direct access, one formula        → O(1)
+  Cuts in half each time            → O(log n)
+  One loop through n items          → O(n)
+  Two separate loops (not nested)   → O(n)
+  Sorting the input                 → O(n log n)
+  Loop inside a loop (both n)       → O(n²)
+  Three nested loops (all n)        → O(n³)
+  Recursive with 2 calls each time  → O(2ⁿ)
+  All permutations                  → O(n!)
+
+"HOW MUCH MEMORY?" — SPACE COMPLEXITY
+
+  I see this in the code...         → It's probably...
+  ─────────────────────────────────────────────────────
+  Just a few variables              → O(1)
+  Recursive, halving each time      → O(log n) stack
+  New array/list of size n          → O(n)
+  Dictionary/set of size n          → O(n)
+  Recursive, depth n                → O(n) stack
+  2D grid of size n × n             → O(n²)
+  Storing all subsets               → O(2ⁿ)
+
+OUR TECHNIQUES SUMMARY:
+
+  Technique         Time       Space   One-line story
+  ────────────────────────────────────────────────────────────────────
+  Opposite Ends     O(n)       O(1)    Two friends walk toward each other
+  Fast/Slow         O(n)       O(1)    Fast runner catches slow on a loop
+  Sliding Window    O(n)       O(1)    Window slides; expand right, shrink left
+  Prefix Sum        O(n)+O(1)  O(n)    Pre-calculate totals for instant queries
+  Kadane's          O(n)       O(1)    Collect coins; restart if total goes negative
+
+══════════════════════════════════════════════════════════════════════════════
+END OF GUIDE
+══════════════════════════════════════════════════════════════════════════════
+Written in plain English. No jargon. Stories over symbols.
+25 chapters covering everything from scratch to FAANG interviews.
+You now know Time & Space Complexity better than most developers.
+══════════════════════════════════════════════════════════════════════════════
